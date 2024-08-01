@@ -15,8 +15,10 @@ app.use(express.urlencoded({ extended: true, limit: "16kb" }));
 app.use(cookieParser());
 
 //@dec import routes
-import userRegisterRoutes from "./routes/user.routes.js";
+import userRoutes from "./routes/user.routes.js";
+import transactionRoutes from "./routes/transaction.routes.js";
 
-app.use("/api/v1/user", userRegisterRoutes);
+app.use("/api/v1/user", userRoutes);
+app.use("/api/v1/transaction", transactionRoutes);
 
 export default app;
