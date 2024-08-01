@@ -17,7 +17,7 @@ const generateRefereshTokens = async (userId) => {
   } catch (error) {
     throw new ApiError(
       500,
-      "Something went wrong while generating referesh and access token"
+      "Something went wrong while generating referesh token"
     );
   }
 };
@@ -53,7 +53,7 @@ const userLogIn = asyncHandler(async (req, res) => {
     throw new ApiError(401, "invalid credentials");
   }
 
-  const refreshToken = generateRefereshTokens(user._id);
+  const refreshToken = await generateRefereshTokens(user._id);
 
   const userLogedIn = await User.findById(user._id).select("-password ");
 
@@ -69,12 +69,45 @@ const userLogIn = asyncHandler(async (req, res) => {
         200,
         {
           user: userLogedIn,
-
           refreshToken,
         },
         "User logged In Successfully"
       )
     );
 });
+//@dec -------userLogOut controller------------
+const userLogOut = asyncHandler(async (req, res) => {
+  const user = await User.findByIdAndUpdate(req.user?._id, {
+    $unset: {
+      refreshToken: 1,
+    },
+  });
+  const options = {
+    httpOnly: true,
+  };
 
-export { userRegister, userLogIn };
+  return res
+    .status(200)
+    .clearCookie("refreshToken", options)
+    .json(new ApiResponse(200, "user logOut successfully"));
+});
+//@dec -------userLogIn controller------------
+const userUpdate = asyncHandler(async (req, res) => {
+  const { username, email, password } = req.body;
+
+  const user = await User.findOne({ email });
+  if (user) {
+    throw new ApiError(409, "user not exist");
+  }
+  const userUp = await User.findByIdAndUpdate(req.user?._id, {
+    username,
+    email,
+    password,
+  });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, userUp, "user updated successfully"));
+});
+
+export { userRegister, userLogIn, userLogOut, userUpdate };
